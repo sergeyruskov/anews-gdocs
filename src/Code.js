@@ -207,122 +207,57 @@ function SHARED() {
 		return oauthClient().getAuthorizationUrl();
 	};
 	var surroundSelectionText = exports.surroundSelectionText = function surroundSelectionText() {
-
 		var selection = DocumentApp.getActiveDocument().getSelection();
+
 		if (selection) {
 			var elements = selection.getSelectedElements();
 			for (var i = 0; i < elements.length; i++) {
 				var el = elements[i].getElement();
-				var textEditable = el.editAsText();
 				var text = el.asText().getText();
+				var paragraph = el.getParent().asParagraph();
+				el.setText('');
 
-				var startIndex = elements[i].getStartOffset();
-				var endIndex = elements[i].getEndOffsetInclusive();
-				var selectedPart = text.substring(startIndex, endIndex + 1);
-				var editablePart = '<p class="abcd">' + selectedPart + '</p>';
-				var startText = text.substring(0, startIndex);
-				var endText = text.substring(endIndex + 1, el.asText().getText().length);
-				textEditable.setText('' + startText + editablePart + endText);
+				//todo pogugli Logger
+				paragraph.appendHorizontalRule();
+				paragraph.appendText(text);
+				paragraph.appendHorizontalRule();
+				Logger.log(DocumentApp.Attribute);
+				Logger.getLog();
 
-				// if (elements[i].isPartial()) {
+				var style = {};
+				style[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
+				style[DocumentApp.Attribute.FONT_FAMILY] = 'AmericanTypewriter';
+				style[DocumentApp.Attribute.FONT_SIZE] = 15;
+				style[DocumentApp.Attribute.SPACING_BEFORE] = 140;
+				style[DocumentApp.Attribute.LINE_SPACING] = 1.2;
+				style[DocumentApp.Attribute.FOREGROUND_COLOR] = '#4a4a4a';
+				paragraph.setAttributes(style);
+
+				// const editablePart = '<p class="post-content__quote">' + selectedPart + '</p>';
+				// const startText = text.substring(0, startIndex);
+				// const endText = text.substring(endIndex + 1, el.asText().getText().length);
+				// const startIndex = elements[i].getStartOffset();
+				// const endIndex = elements[i].getEndOffsetInclusive();
+				// const selectedPart = text.substring(startIndex, endIndex + 1);
+
+				// el.editAsText().setText(`${startText}${editablePart}${endText}`);
+				// Append a plain paragraph.
+
+				// Apply the custom style.
+
+				// Append two paragraphs to the document.
+				// var par1 = DocumentApp.getActiveDocument().getBody().appendParagraph('Paragraph 1.');
+				// var par2 = DocumentApp.getActiveDocument().getBody().appendParagraph('Paragraph 2.');
 				//
+				// // Merge the newly added paragraphs into a single paragraph.
+				// par2.merge();
+
+				// DocumentApp.getActiveDocument().getBody().appendParagraph('Paragraph 1.');
 				//
-				//
-				//
-				//
-				// 	// text.push(elements[i].getText().substring(startIndex, endIndex + 1));
-				// } else {
-				// 	element = elements[i].getElement();
-				// 	// Only translate elements that can be edited as text; skip images and
-				// 	// other non-text elements.
-				// 	if (element.editAsText) {
-				// 		var elementText = element.asText().getText();
-				// 		// This check is necessary to exclude images, which return a blank
-				// 		// text element.
-				// 		if (element.getElement().editAsText) {
-				// 			const text = element.getElement().editAsText();
-				// 			if (element.editAsText) {
-				// 				// body.appendParagraph(element.asText().getText());
-				// 			}
-				// 			text.setText(elementText + '1');
-				// 		}
-				//
-				//
-				// 		if (elementText != '') {
-				// 			text.push(elementText);
-				// 		}
-				// 	}
-				// }
+				// el.getParent().asParagraph().merge();;
+
 			}
-			// if (text.length == 0) {
-			// 	throw 'Please select some text.';
-			// }
-			// return text;
-		} /*else {
-	   throw 'Please select some text.';
-	   }*/
-
-		// const activeDocument = DocumentApp.getActiveDocument();
-		// const selection = activeDocument.getSelection();
-		//
-		// const body = activeDocument.getBody();
-		//
-		// // Append a paragraph and a page break to the document body section directly.
-		//
-		// if (selection) {
-		// 	var text = [];
-		// 	var elements = selection.getSelectedElements();
-		// 	for (var i = 0; i < elements.length; i++) {
-		//
-		// 		var element = elements[i];
-		//
-		// 		// Only modify elements that can be edited as text; skip images and other non-text elements.
-		// 		if (element.getElement().editAsText) {
-		// 			var text = element.getElement().editAsText();
-		// 			if (element.editAsText) {
-		// 				body.appendParagraph(element.asText().getText());
-		// 			}
-		// 			text.setText('1');
-		//
-		// 			// Bold the selected part of the element, or the full element if it's completely selected.
-		// 			// if (element.isPartial()) {
-		// 			// 	// text.setBold(element.getStartOffset(), element.getEndOffsetInclusive(), true);
-		// 			// } else {
-		// 			// 	text.setText('2');
-		// 			// 	// text.setBold(true);
-		// 			// }
-		// 		}
-		//
-		// 		if (elements[i].isPartial()) {
-		// 			var element = elements[i].getElement().asText();
-		// 			var startIndex = elements[i].getStartOffset();
-		// 			var endIndex = elements[i].getEndOffsetInclusive();
-		//
-		// 			text.push(element.getText().substring(startIndex, endIndex + 1));
-		// 		} else {
-		// 			var element = elements[i].getElement();
-		// 			// Only translate elements that can be edited as text; skip images and
-		// 			// other non-text elements.
-		// 			if (element.editAsText) {
-		// 				var elementText = element.asText().getText();
-		// 				// This check is necessary to exclude images, which return a blank
-		// 				// text element.
-		// 				if (elementText != '') {
-		// 					body.appendParagraph(elementText);
-		// 					text.push(elementText);
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// 	// if (text.length == 0) {
-		// 	// 	throw 'Please select some text.';
-		// 	// }
-		// 	// DocumentApp.getUi().alert( text )
-		// 	// return text;
-		// } /*else {
-		// 	throw 'Please select some text.';
-		// }*/
-		//
+		}
 	};
 
 	function wpDie() {
