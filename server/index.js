@@ -1,0 +1,418 @@
+/**
+ * @OnlyCurrentDoc
+ *
+ * The above comment directs Apps Script to limit the scope of file
+ * access for this add-on. It specifies that this add-on will only
+ * attempt to read or modify the files in which the add-on is used,
+ * and not all of the user's files. The authorization request message
+ * presented to users will reflect this limited scope.
+ */
+
+/* globals PropertiesService, DocumentApp, UrlFetchApp, Utilities, HtmlService, Logger */
+import { OAuth2 } from 'imports-loader?_=./Underscore.gs!apps-script-oauth2/dist/OAuth2.gs'
+
+import { WPClient } from './wp-client';
+import { DocService } from './doc-service';
+import { imageUploadLinker } from './image-upload-linker';
+import { ImageCache } from './image-cache';
+import { Persistance } from './persistance';
+import { getDateFromIso } from './date-utils';
+
+const wpClient = WPClient( PropertiesService, UrlFetchApp )
+const store = Persistance( PropertiesService )
+
+/**
+ * Creates a menu entry in the Google Docs UI when the document is opened.
+ * This method is only used by the regular add-on, and is never called by
+ * the mobile add-on version.
+ *
+ * @param {object} e The event parameter for a simple onOpen trigger. To
+ *     determine which authorization mode (ScriptApp.AuthMode) the trigger is
+ *     running in, inspect e.authMode.
+ */
+export function onOpen() {
+	DocumentApp.getUi().createAddonMenu()
+		.addItem( 'Open', 'showSidebar' )
+		// .addItem( 'Clear All Site Data', 'clearSiteData' )
+		// .addItem( 'Dev Testing', 'devTest' )
+		.addToUi();
+}
+
+/**
+ * Runs when the add-on is installed.
+ * This method is only used by the regular add-on, and is never called by
+ * the mobile add-on version.
+ *
+ * @param {object} e The event parameter for a simple onInstall trigger. To
+ *     determine which authorization mode (ScriptApp.AuthMode) the trigger is
+ *     running in, inspect e.authMode. (In practice, onInstall triggers always
+ *     run in AuthMode.FULL, but onOpen triggers may be AuthMode.LIMITED or
+ *     AuthMode.NONE.)
+ */
+export function onInstall( e ) {
+	onOpen( e );
+}
+
+/**
+ * Allow the HTML template to include files
+ *
+ * @param {string} filename file to include
+ * @returns {string} rendered content
+ */
+export function include( filename ) {
+	return HtmlService.createHtmlOutputFromFile( filename )
+		.getContent();
+}
+
+/**
+ * Opens a sidebar in the document containing the add-on's user interface.
+ * This method is only used by the regular add-on, and is never called by
+ * the mobile add-on version.
+ */
+export function showSidebar() {
+	const page = HtmlService.createTemplateFromFile( 'sidebar' ).evaluate();
+
+	page.setTitle( 'Anews' );
+	DocumentApp.getUi().showSidebar( page );
+}
+
+export const getAuthUrl            = () => oauthClient().getAuthorizationUrl()
+export const surroundSelectionText = () => {
+
+
+	const selection = DocumentApp.getActiveDocument().getSelection();
+	if (selection) {
+		const elements = selection.getSelectedElements();
+		for (let i = 0; i < elements.length; i++) {
+			const el = elements[i].getElement();
+			const textEditable = el.editAsText();
+			const text = el.asText().getText();
+
+			const startIndex = elements[i].getStartOffset();
+			const endIndex = elements[i].getEndOffsetInclusive();
+			const selectedPart = text.substring(startIndex, endIndex + 1);
+			const editablePart = '<p class="abcd">' + selectedPart + '</p>';
+			const startText = text.substring(0, startIndex);
+			const endText = text.substring(endIndex + 1, el.asText().getText().length);
+			textEditable.setText(`${startText}${editablePart}${endText}`);
+
+			// if (elements[i].isPartial()) {
+			//
+			//
+			//
+			//
+			//
+			// 	// text.push(elements[i].getText().substring(startIndex, endIndex + 1));
+			// } else {
+			// 	element = elements[i].getElement();
+			// 	// Only translate elements that can be edited as text; skip images and
+			// 	// other non-text elements.
+			// 	if (element.editAsText) {
+			// 		var elementText = element.asText().getText();
+			// 		// This check is necessary to exclude images, which return a blank
+			// 		// text element.
+			// 		if (element.getElement().editAsText) {
+			// 			const text = element.getElement().editAsText();
+			// 			if (element.editAsText) {
+			// 				// body.appendParagraph(element.asText().getText());
+			// 			}
+			// 			text.setText(elementText + '1');
+			// 		}
+			//
+			//
+			// 		if (elementText != '') {
+			// 			text.push(elementText);
+			// 		}
+			// 	}
+			// }
+		}
+		// if (text.length == 0) {
+		// 	throw 'Please select some text.';
+		// }
+		// return text;
+	} /*else {
+		throw 'Please select some text.';
+	}*/
+
+
+	// const activeDocument = DocumentApp.getActiveDocument();
+	// const selection = activeDocument.getSelection();
+	//
+	// const body = activeDocument.getBody();
+	//
+	// // Append a paragraph and a page break to the document body section directly.
+	//
+	// if (selection) {
+	// 	var text = [];
+	// 	var elements = selection.getSelectedElements();
+	// 	for (var i = 0; i < elements.length; i++) {
+	//
+	// 		var element = elements[i];
+	//
+	// 		// Only modify elements that can be edited as text; skip images and other non-text elements.
+	// 		if (element.getElement().editAsText) {
+	// 			var text = element.getElement().editAsText();
+	// 			if (element.editAsText) {
+	// 				body.appendParagraph(element.asText().getText());
+	// 			}
+	// 			text.setText('1');
+	//
+	// 			// Bold the selected part of the element, or the full element if it's completely selected.
+	// 			// if (element.isPartial()) {
+	// 			// 	// text.setBold(element.getStartOffset(), element.getEndOffsetInclusive(), true);
+	// 			// } else {
+	// 			// 	text.setText('2');
+	// 			// 	// text.setBold(true);
+	// 			// }
+	// 		}
+	//
+	// 		if (elements[i].isPartial()) {
+	// 			var element = elements[i].getElement().asText();
+	// 			var startIndex = elements[i].getStartOffset();
+	// 			var endIndex = elements[i].getEndOffsetInclusive();
+	//
+	// 			text.push(element.getText().substring(startIndex, endIndex + 1));
+	// 		} else {
+	// 			var element = elements[i].getElement();
+	// 			// Only translate elements that can be edited as text; skip images and
+	// 			// other non-text elements.
+	// 			if (element.editAsText) {
+	// 				var elementText = element.asText().getText();
+	// 				// This check is necessary to exclude images, which return a blank
+	// 				// text element.
+	// 				if (elementText != '') {
+	// 					body.appendParagraph(elementText);
+	// 					text.push(elementText);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// 	// if (text.length == 0) {
+	// 	// 	throw 'Please select some text.';
+	// 	// }
+	// 	// DocumentApp.getUi().alert( text )
+	// 	// return text;
+	// } /*else {
+	// 	throw 'Please select some text.';
+	// }*/
+	//
+};
+
+function wpDie( message = '' ) {
+	const out = HtmlService.createTemplateFromFile( 'wp-die' );
+	out.message = message;
+	return out.evaluate();
+}
+
+function wpDieTemplate( template, error ) {
+	const out = HtmlService.createTemplateFromFile( 'wp-die-' + template );
+
+	out.error = '';
+	if ( error ) {
+		out.error = error.message;
+	}
+
+	return out.evaluate();
+}
+
+const updateSiteInfo = site => {
+	const postTypes = wpClient.getPostTypes( site ).map( postType => {
+		const taxonomies = wpClient.getTaxonomiesForPostType( site, postType ).map( t => t.name )
+		return Object.assign( {}, postType, { taxonomies } )
+	} )
+
+	return Object.assign( {}, site, {
+		info: wpClient.getSiteInfo( site ),
+		categories: wpClient.getCategories( site ),
+		postTypes
+	} )
+}
+
+export function authCallback( request ) {
+	let isAuthorized;
+	try {
+		isAuthorized = oauthClient().handleCallback( request );
+	} catch ( e ) {
+		return wpDie( 'There was a problem getting access to your site. Please try re-adding it, or <a href="https://support.wordpress.com/">contact support</a>.<pre>' + e );
+	}
+
+	if ( isAuthorized ) {
+		let site = oauthClient().getToken_()
+		try {
+			site = updateSiteInfo( site )
+		} catch ( e ) {
+			return wpDieTemplate( 'json-api', e );
+		}
+		store.addSite( site )
+		const template = HtmlService.createTemplateFromFile( 'oauth-success' );
+		showSidebar(); // reload
+		return template.evaluate();
+	}
+
+	return wpDieTemplate( 'deny' );
+}
+
+export function refreshSite( site_id ) {
+	const site = store.findSite( site_id )
+	const updatedSite = updateSiteInfo( site )
+	const filteredSite = store.updateSite( updatedSite )
+	const cachedPostData = store.getPostStatus();
+	filteredSite.post = cachedPostData[ site_id ]
+	return filteredSite
+}
+
+export function postToWordPress( site_id, { categories = [], tags = [], type = 'post' } ) {
+	const doc = DocumentApp.getActiveDocument();
+	const docProps = PropertiesService.getDocumentProperties();
+	const site = store.findSite( site_id );
+	const title = doc.getName()
+
+	const cachedPostData = store.getPostStatus();
+	let postId, cachedPost;
+	if ( cachedPostData[ site_id ] ) {
+		cachedPost = cachedPostData[ site_id ]
+		postId = cachedPost.ID;
+
+		if ( postOnServerIsNewer( site, cachedPost ) && ! confirmOverwrite() ) {
+			return cachedPost;
+		}
+	} else {
+		const postParams = { title, categories, tags, type, status: 'draft' }
+		const response = wpClient.postToWordPress( site, 'new', postParams );
+		store.savePostToSite( response, site )
+		postId = response.ID;
+	}
+
+	const upload = image => wpClient.uploadImage( site, image, postId )
+	const imageCache = ImageCache( site, docProps, md5 )
+	const imageUrlMapper = imageUploadLinker( upload, imageCache )
+	const renderContainer = DocService( DocumentApp, imageUrlMapper )
+	const content = renderContainer( doc.getBody() )
+	const postParams = { title, content, categories, tags, type }
+	const response = wpClient.postToWordPress( site, postId, postParams )
+	return store.savePostToSite( response, site )
+}
+
+function postOnServerIsNewer( site, cachedPost ) {
+	let serverPost;
+	try {
+		serverPost = wpClient.getPostStatus( site, cachedPost.ID );
+	} catch ( e ) {
+		Logger.log( 'Cannot get post status:' + e )
+		return false;
+	}
+
+	const localDate = getDateFromIso( cachedPost.modified );
+	const serverDate = getDateFromIso( serverPost.modified );
+
+	return ( localDate < serverDate );
+}
+
+function confirmOverwrite() {
+	const ui = DocumentApp.getUi();
+	const promptResponse = ui.alert(
+		'The post has been modified on the site',
+		'If you continue, any changes you made to the post on the site will be overwritten with this document.\n\nDo you want to overwrite the changes on the site?',
+		ui.ButtonSet.YES_NO
+	);
+
+	return ( promptResponse === ui.Button.YES )
+}
+
+export function listSites() {
+	const sites = store.listSites();
+	const posts = store.getPostStatus();
+	sites.forEach( site => site.post = posts[ site.blog_id ] )
+	return sites;
+}
+
+export function deleteSite( site_id ) {
+	const site = store.findSite( site_id );
+	if ( !site ) {
+		return;
+	}
+
+	const ui = DocumentApp.getUi();
+	const promptResponse = ui.alert(
+		'Are you sure you want to remove ' + site.info.name + '?',
+		ui.ButtonSet.YES_NO
+	);
+
+	if ( promptResponse === ui.Button.YES ) {
+		store.deleteSite( site_id );
+	}
+
+	return;
+}
+
+export function devTest() {
+	// const doc = DocumentApp.getActiveDocument();
+	// const body = doc.getBody();
+	// const images = [];
+	// let imageRange = body.findElement( DocumentApp.ElementType.INLINE_IMAGE );
+	// while ( imageRange ) {
+	// 	const image = imageRange.getElement();
+	// 	const blob = image.getBlob();
+	// 	images.push( {
+	// 		attributes: image.getAttributes(),
+	// 		altTitle: image.getAltTitle(),
+	// 		altDescription: image.getAltDescription(),
+	// 		blob: {
+	// 			name: blob.getName(),
+	// 		}
+	// 	} )
+	// 	imageRange = body.findElement( DocumentApp.ElementType.INLINE_IMAGE, imageRange );
+	// }
+	// DocumentApp.getUi().alert( JSON.stringify( Object.keys( _ ) ) )
+}
+
+export function clearSiteData() {
+	const ui = DocumentApp.getUi();
+	const promptResponse = ui.alert(
+		'Are you sure you want to clear all sites?',
+		ui.ButtonSet.YES_NO
+	);
+
+	if ( promptResponse === ui.Button.YES ) {
+		oauthClient().reset();
+		PropertiesService.getUserProperties().deleteAllProperties();
+		PropertiesService.getDocumentProperties().deleteAllProperties();
+	}
+
+	showSidebar();
+}
+
+let oauthService = undefined;
+// Needs to be lazy-instantiated because we don't have permissions to access
+// properties until the app is actually open
+function oauthClient() {
+	if ( oauthService ) {
+		return oauthService;
+	}
+	const { OauthClientId, OauthClientSecret } = PropertiesService.getScriptProperties().getProperties();
+
+	oauthService = OAuth2.createService( 'overpass' )
+		.setAuthorizationBaseUrl( 'https://public-api.wordpress.com/oauth2/authorize' )
+		.setTokenUrl( 'https://public-api.wordpress.com/oauth2/token' )
+		.setClientId( OauthClientId )
+		.setClientSecret( OauthClientSecret )
+		.setCallbackFunction( 'authCallback' )
+		.setPropertyStore( PropertiesService.getUserProperties() )
+	return oauthService;
+}
+
+function md5( message ) {
+	return Utilities.computeDigest( Utilities.DigestAlgorithm.MD5, message, Utilities.Charset.US_ASCII )
+		.map( ( byte ) => {
+			let char = '';
+			if ( byte < 0 ) {
+				byte += 255;
+			}
+			char = byte.toString( 16 );
+			if ( char.length === 1 ) {
+				char = '0' + char;
+			}
+			return char;
+		} )
+		.join( '' )
+}

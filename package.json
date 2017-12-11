@@ -1,0 +1,41 @@
+{
+  "name": "wordpress-for-google-docs",
+  "version": "1.4.5",
+  "description": "Post to WordPress.com from Google Docs",
+  "license": "GPL-3.0",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "test": "mocha --require babel-register",
+    "test:watch": "npm test -- --watch -R min",
+    "deploy": "npm run build && $(npm bin)/gapps upload",
+    "postversion": "git push && git push --tags"
+  },
+  "author": "George Hotelling <george.hotelling@automattic.com>",
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-loader": "^6.2.8",
+    "babel-plugin-transform-es3-member-expression-literals": "^6.8.0",
+    "babel-plugin-transform-es3-property-literals": "^6.8.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-register": "^6.18.0",
+    "chai": "^3.5.0",
+    "gas-webpack-plugin": "^0.1.0",
+    "imports-loader": "^0.7.0",
+    "mocha": "^3.1.2",
+    "node-google-apps-script": "^1.1.5",
+    "testdouble": "^1.9.0",
+    "webpack": "^1.13.3"
+  },
+  "dependencies": {
+    "apps-script-oauth2": "git+https://github.com/googlesamples/apps-script-oauth2.git",
+    "babel-preset-react": "^6.23.0",
+    "promise-polyfill": "^6.0.2",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "wrapper-webpack-plugin": "^0.1.11"
+  }
+}
