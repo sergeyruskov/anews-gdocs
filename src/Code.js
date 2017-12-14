@@ -207,6 +207,7 @@ function SHARED() {
 		return oauthClient().getAuthorizationUrl();
 	};
 	var surroundSelectionText = exports.surroundSelectionText = function surroundSelectionText() {
+
 		var selection = DocumentApp.getActiveDocument().getSelection();
 
 		if (selection) {
@@ -215,47 +216,30 @@ function SHARED() {
 				var el = elements[i].getElement();
 				var text = el.asText().getText();
 				var paragraph = el.getParent().asParagraph();
+				var paragraphAsText = paragraph.editAsText();
+				var start = '[quote]';
+				var end = '[/quote]';
+				var completedText = '' + start + text + end;
 				el.setText('');
 
-				//todo pogugli Logger
 				paragraph.appendHorizontalRule();
-				paragraph.appendText(text);
+				paragraph.appendText(completedText);
+
 				paragraph.appendHorizontalRule();
-				Logger.log(DocumentApp.Attribute);
-				Logger.getLog();
 
 				var style = {};
 				style[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
 				style[DocumentApp.Attribute.FONT_FAMILY] = 'AmericanTypewriter';
 				style[DocumentApp.Attribute.FONT_SIZE] = 15;
-				style[DocumentApp.Attribute.SPACING_BEFORE] = 140;
+				style[DocumentApp.Attribute.BOLD] = false;
 				style[DocumentApp.Attribute.LINE_SPACING] = 1.2;
 				style[DocumentApp.Attribute.FOREGROUND_COLOR] = '#4a4a4a';
 				paragraph.setAttributes(style);
 
-				// const editablePart = '<p class="post-content__quote">' + selectedPart + '</p>';
-				// const startText = text.substring(0, startIndex);
-				// const endText = text.substring(endIndex + 1, el.asText().getText().length);
-				// const startIndex = elements[i].getStartOffset();
-				// const endIndex = elements[i].getEndOffsetInclusive();
-				// const selectedPart = text.substring(startIndex, endIndex + 1);
-
-				// el.editAsText().setText(`${startText}${editablePart}${endText}`);
-				// Append a plain paragraph.
-
-				// Apply the custom style.
-
-				// Append two paragraphs to the document.
-				// var par1 = DocumentApp.getActiveDocument().getBody().appendParagraph('Paragraph 1.');
-				// var par2 = DocumentApp.getActiveDocument().getBody().appendParagraph('Paragraph 2.');
-				//
-				// // Merge the newly added paragraphs into a single paragraph.
-				// par2.merge();
-
-				// DocumentApp.getActiveDocument().getBody().appendParagraph('Paragraph 1.');
-				//
-				// el.getParent().asParagraph().merge();;
-
+				paragraphAsText.setFontSize(0, start.length - 1, 6);
+				paragraphAsText.setForegroundColor(0, start.length - 1, "#ffffff");
+				paragraphAsText.setFontSize(completedText.length - end.length, completedText.length - 1, 6);
+				paragraphAsText.setForegroundColor(completedText.length - end.length, completedText.length - 1, "#ffffff");
 			}
 		}
 	};
