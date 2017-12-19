@@ -219,12 +219,17 @@ function SHARED() {
 				var paragraphAsText = paragraph.editAsText();
 				var start = '[quote]';
 				var end = '[/quote]';
-				var completedText = '' + start + text + end;
+				var startContent = '[quoteContent]';
+				var endContent = '[/quoteContent]';
+				var completedText = '' + start + startContent + text + endContent + end;
 				el.setText('');
 
 				paragraph.appendText(start);
 				paragraph.appendHorizontalRule();
+
+				paragraph.appendText(startContent);
 				paragraph.appendText(text);
+				paragraph.appendText(endContent);
 
 				paragraph.appendHorizontalRule();
 				paragraph.appendText(end);
@@ -237,10 +242,12 @@ function SHARED() {
 				style[DocumentApp.Attribute.LINE_SPACING] = 1.2;
 				style[DocumentApp.Attribute.FOREGROUND_COLOR] = '#4a4a4a';
 				paragraph.setAttributes(style);
-				paragraphAsText.setFontSize(0, start.length - 1, 6);
-				paragraphAsText.setForegroundColor(0, start.length - 1, "#ffffff");
-				paragraphAsText.setFontSize(completedText.length - end.length, completedText.length - 1, 6);
-				paragraphAsText.setForegroundColor(completedText.length - end.length, completedText.length - 1, "#ffffff");
+
+				paragraphAsText.setFontSize(0, start.length + startContent.length - 1, 6);
+				paragraphAsText.setForegroundColor(0, start.length + startContent.length - 1, "#ffffff");
+
+				paragraphAsText.setFontSize(completedText.length - end.length - endContent.length, completedText.length - 1, 6);
+				paragraphAsText.setForegroundColor(completedText.length - end.length - endContent.length, completedText.length - 1, "#ffffff");
 			}
 		}
 	};
