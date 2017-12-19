@@ -93,12 +93,10 @@ export const surroundSelectionText = () => {
 			const completedText = `${start}${text}${end}`;
 			el.setText('');
 
-			paragraph.appendText(start);
 			paragraph.appendHorizontalRule();
-			paragraph.appendText(text);
+			paragraph.appendText(completedText);
 
 			paragraph.appendHorizontalRule();
-			paragraph.appendText(end);
 
 			const style = {};
 			style[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] =
