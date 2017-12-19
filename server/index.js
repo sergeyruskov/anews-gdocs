@@ -90,12 +90,17 @@ export const surroundSelectionText = () => {
 			const paragraphAsText = paragraph.editAsText();
 			const start = '[quote]';
 			const end = '[/quote]';
+			const startContent = '[quoteContent]';
+			const endContent = '[/quoteContent]';
 			const completedText = `${start}${text}${end}`;
 			el.setText('');
 
 			paragraph.appendText(start);
 			paragraph.appendHorizontalRule();
+
+			paragraph.appendText(startContent);
 			paragraph.appendText(text);
+			paragraph.appendText(endContent);
 
 			paragraph.appendHorizontalRule();
 			paragraph.appendText(end);
