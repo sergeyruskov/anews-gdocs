@@ -92,7 +92,7 @@ export const surroundSelectionText = () => {
 			const end = '[/quote]';
 			const startContent = '[quoteContent]';
 			const endContent = '[/quoteContent]';
-			const completedText = `${start}${startContent}${text}${endContent}${end}`;
+			const completedText = `${start}${startContent} ${text} ${endContent}${end}`;
 			el.setText('');
 
 			paragraph.appendText(start);
@@ -115,18 +115,19 @@ export const surroundSelectionText = () => {
 			style[DocumentApp.Attribute.FOREGROUND_COLOR] = '#4a4a4a';
 			paragraph.setAttributes(style);
 
+
 			paragraphAsText.setFontSize(0, start.length + startContent.length - 1, 6);
 			paragraphAsText.setForegroundColor(0, start.length + startContent.length - 1, "#ffffff");
 
 
 			paragraphAsText.setFontSize(
-				completedText.length - end.length - endContent.length,
-				completedText.length - 1,
+				completedText.length - end.length - endContent.length - 2,
+				completedText.length - 3,
 				6
 			);
 			paragraphAsText.setForegroundColor(
-				completedText.length - end.length - endContent.length,
-				completedText.length - 1,
+				completedText.length - end.length - endContent.length - 2,
+				completedText.length - 3,
 				"#ffffff"
 			);
 		}

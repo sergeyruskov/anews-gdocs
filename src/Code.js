@@ -221,7 +221,7 @@ function SHARED() {
 				var end = '[/quote]';
 				var startContent = '[quoteContent]';
 				var endContent = '[/quoteContent]';
-				var completedText = '' + start + startContent + text + endContent + end;
+				var completedText = '' + start + startContent + ' ' + text + ' ' + endContent + end;
 				el.setText('');
 
 				paragraph.appendText(start);
@@ -246,8 +246,8 @@ function SHARED() {
 				paragraphAsText.setFontSize(0, start.length + startContent.length - 1, 6);
 				paragraphAsText.setForegroundColor(0, start.length + startContent.length - 1, "#ffffff");
 
-				paragraphAsText.setFontSize(completedText.length - end.length - endContent.length, completedText.length - 1, 6);
-				paragraphAsText.setForegroundColor(completedText.length - end.length - endContent.length, completedText.length - 1, "#ffffff");
+				paragraphAsText.setFontSize(completedText.length - end.length - endContent.length - 2, completedText.length - 3, 6);
+				paragraphAsText.setForegroundColor(completedText.length - end.length - endContent.length - 2, completedText.length - 3, "#ffffff");
 			}
 		}
 	};
