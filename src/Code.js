@@ -222,10 +222,12 @@ function SHARED() {
 				var completedText = '' + start + text + end;
 				el.setText('');
 
+				paragraph.appendText(start);
 				paragraph.appendHorizontalRule();
-				paragraph.appendText(completedText);
+				paragraph.appendText(text);
 
 				paragraph.appendHorizontalRule();
+				paragraph.appendText(end);
 
 				var style = {};
 				style[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
