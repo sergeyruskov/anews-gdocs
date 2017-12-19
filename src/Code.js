@@ -222,10 +222,12 @@ function SHARED() {
 				var completedText = '' + start + text + end;
 				el.setText('');
 
+				paragraph.appendText(start);
 				paragraph.appendHorizontalRule();
-				paragraph.appendText(completedText);
+				paragraph.appendText(text);
 
 				paragraph.appendHorizontalRule();
+				paragraph.appendText(end);
 
 				var style = {};
 				style[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] = DocumentApp.HorizontalAlignment.CENTER;
@@ -235,7 +237,6 @@ function SHARED() {
 				style[DocumentApp.Attribute.LINE_SPACING] = 1.2;
 				style[DocumentApp.Attribute.FOREGROUND_COLOR] = '#4a4a4a';
 				paragraph.setAttributes(style);
-
 				paragraphAsText.setFontSize(0, start.length - 1, 6);
 				paragraphAsText.setForegroundColor(0, start.length - 1, "#ffffff");
 				paragraphAsText.setFontSize(completedText.length - end.length, completedText.length - 1, 6);

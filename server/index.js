@@ -79,12 +79,7 @@ export function showSidebar() {
 export const getAuthUrl            = () => oauthClient().getAuthorizationUrl()
 export const surroundSelectionText = () => {
 
-
-
 	const selection = DocumentApp.getActiveDocument().getSelection();
-
-
-
 
 	if (selection) {
 		const elements = selection.getSelectedElements();
@@ -98,10 +93,12 @@ export const surroundSelectionText = () => {
 			const completedText = `${start}${text}${end}`;
 			el.setText('');
 
+			paragraph.appendText(start);
 			paragraph.appendHorizontalRule();
-			paragraph.appendText(completedText);
+			paragraph.appendText(text);
 
 			paragraph.appendHorizontalRule();
+			paragraph.appendText(end);
 
 			const style = {};
 			style[DocumentApp.Attribute.HORIZONTAL_ALIGNMENT] =
@@ -112,7 +109,6 @@ export const surroundSelectionText = () => {
 			style[DocumentApp.Attribute.LINE_SPACING] = 1.2;
 			style[DocumentApp.Attribute.FOREGROUND_COLOR] = '#4a4a4a';
 			paragraph.setAttributes(style);
-
 			paragraphAsText.setFontSize(0, start.length - 1, 6);
 			paragraphAsText.setForegroundColor(0, start.length - 1, "#ffffff");
 			paragraphAsText.setFontSize(
